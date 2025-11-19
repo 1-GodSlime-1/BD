@@ -63,3 +63,5 @@
 
 > [!CAUTION]
 > [Очень важная ссылка](https://www.youtube.com/watch?v=_tA1nP1iits)
+> [!IMPORTANT]
+> [Ссылка даже важнее](https://www.youtube.com/watch?v=RYCR55P99yg)

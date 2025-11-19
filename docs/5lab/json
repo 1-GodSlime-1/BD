@@ -1,0 +1,16 @@
+[
+  {
+    "id": 8,
+    "name": "Сергей",
+    "age": 18,
+    "is_student": 1,
+    "skills": [
+      "Python",
+      "Java"
+    ],
+    "address": {
+      "city": "Нижний Новгород",
+      "street": "Казанское Шоссе"
+    }
+  }
+]

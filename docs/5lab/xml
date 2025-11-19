@@ -1,0 +1,12 @@
+<id>8</id>
+	<name>Сергей</name>
+        <age>18</age>
+        <is_student>1</is_student>
+        <skills>
+            <skill>Python</skill>
+            <skill>Java</skill>
+        </skills>
+        <address>
+            <city>Нижний Новгород</city>
+            <street>Казанское Шоссе 12a</street>
+        </address>

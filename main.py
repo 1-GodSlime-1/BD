@@ -15,7 +15,6 @@ def main_menu():
     print("0 - Выход")
     return input("Ваш выбор: ")
 
-
 def login():
     print("\n=== Вход в систему ===")
     print("1 - Вход по логину")
@@ -39,6 +38,9 @@ def login():
 def regist(repo):
     while True:
         login = input("Придумайте логин: ")
+        if len(login) < 3 or len(login) > 20:
+            print("Логин должен быть от 3 до 20 символов")
+            continue
         if repo.check_login_exists(login):
             print("Этот логин уже занят. Попробуйте другой.")
             continue
@@ -46,15 +48,26 @@ def regist(repo):
 
     while True:
         email = input("Введите email: ")
-        if repo.check_email_exists(email):
+        if "@" not in email:
+            print("Такого email не может существовать")
+            continue
+        elif len(email) < 7 or len(email) > 50:
+            print("Mail может быть только от 7 до 50 символов")
+            continue
+        elif repo.check_email_exists(email):
             print("Этот email уже занят. Попробуйте другой.")
             continue
         break
-    password = input("Придумайте пароль: ")
+    while True:
+        password = input("Придумайте пароль: ")
+        if len(password) < 4 or len(password) > 40:
+            print("Пароль слишком маленький или слишком большой")
+            continue
+        break
+
     print("\nДоступные роли:")
     print("1 - Гость (только просмотр)")
     print("2 - Работник приюта (требует подтверждения администратора)")
-
     role_choice = input("Выберите роль (1 или 2): ")
     if role_choice == "1":
         role_id = 1
@@ -68,7 +81,6 @@ def regist(repo):
     else:
         print("\nОшибка при регистрации. Попробуйте снова.")
         return False
-
 
 def guest_menu(repo):
     while True:
@@ -149,7 +161,6 @@ def guest_menu(repo):
             break
         else:
             print("Неверный выбор. Попробуйте снова.")
-
 
 def employee_menu(repo, current_user):
     while True:

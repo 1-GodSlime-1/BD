@@ -9,7 +9,6 @@ print("Админ: login: admin, password: admin123 (может управлят
 print("Работник: login: employee, password: 123")
 print("Гость: login: guest, password: 123")
 
-
 def main_menu():
     print('\n=== Приют животных "Счастливый друг" ===')
     print("1 - Вход в систему")

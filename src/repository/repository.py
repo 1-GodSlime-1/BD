@@ -208,6 +208,26 @@ class Repository:
         return [MedicalCard(medical_card_id=row["medical_card_id"], title=row["title"], status=row["status"],
                             description=row["description"], date=row["date"]) for row in rows]
 
+    def get_medical_record(self, medical_card_id: int):
+        self.cursor.execute("SELECT medical_card_id, title, status, description, date FROM MedicalCard WHERE medical_card_id = ?",
+                            (medical_card_id,))
+        row = self.cursor.fetchone()
+        if row:
+            return MedicalCard(medical_card_id=row["medical_card_id"], title=row["title"], status=row["status"],
+                               description=row["description"], date=row["date"])
+        return None
+
+    def update_medical_record(self, medical_card_id, title, status, description):
+        try:
+            self.cursor.execute("""UPDATE MedicalCard SET title = ?, status = ?, description = ? 
+                                WHERE medical_card_id = ?""",
+                                (title, status, description, medical_card_id))
+            self.conn.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Ошибка при обновлении медицинской записи: {e}")
+            return False
+
     def get_animal_by_medical_id(self, medical_card_id: int):
         self.cursor.execute("SELECT animal_id, name FROM Animals WHERE medical_card_id = ?",
                             (medical_card_id,))

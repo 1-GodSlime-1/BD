@@ -9,7 +9,7 @@ print("Работник: login: employee, password: 123")
 print("Гость: login: guest, password: 123")
 
 def main_menu():
-    print("\n=== Приют животных ===")
+    print('\n=== Приют животных "Счастливый друг" ===')
     print("1 - Вход в систему")
     print("2 - Регистрация")
     print("0 - Выход")
@@ -33,7 +33,6 @@ def login():
     password = input("Пароль: ")
 
     return identifier, password, login_type
-
 
 def regist(repo):
     while True:
@@ -81,6 +80,7 @@ def regist(repo):
     else:
         print("\nОшибка при регистрации. Попробуйте снова.")
         return False
+
 
 def guest_menu(repo):
     while True:
@@ -162,6 +162,7 @@ def guest_menu(repo):
         else:
             print("Неверный выбор. Попробуйте снова.")
 
+
 def employee_menu(repo, current_user):
     while True:
         print(f"\n=== Меню работника приюта ===")
@@ -170,8 +171,9 @@ def employee_menu(repo, current_user):
         print("3 - Редактировать информацию животного")
         print("4 - Изменить статус животного")
         print("5 - Показать медицинские карты")
+        print("6 - Редактировать медицинскую карту")
         if current_user.login == "admin":
-            print("6 - Управление пользователями")
+            print("7 - Управление пользователями")
         print("0 - Выход")
         choice = input("Ваш выбор: ")
 
@@ -190,10 +192,21 @@ def employee_menu(repo, current_user):
             print("Доступные виды:")
             for species in species_list:
                 print(f"{species.species_id}: {species.name}")
-            species_id = int(input("ID вида: "))
+            try:
+                species_id = int(input("ID вида: "))
+                if not any(species.species_id == species_id for species in species_list):
+                    print("Ошибка: такого вида не существует!")
+                    continue
+            except ValueError:
+                print("Неверный ввод. Должно быть число.")
+                continue
 
             gender = input("Пол: ")
-            age = int(input("Возраст: "))
+            try:
+                age = int(input("Возраст: "))
+            except ValueError:
+                print("Неверный ввод. Должно быть число.")
+                continue
             size = input("Размер: ")
             features = input("Особенности (можно оставить пустым): ")
 
@@ -201,7 +214,14 @@ def employee_menu(repo, current_user):
             print("Доступные статусы:")
             for status in status_list:
                 print(f"{status.status_id}: {status.name}")
-            status_id = int(input("ID статуса: "))
+            try:
+                status_id = int(input("ID статуса: "))
+                if not any(status.status_id == status_id for status in status_list):
+                    print("Ошибка: такого статуса не существует!")
+                    continue
+            except ValueError:
+                print("Неверный ввод. Должно быть число.")
+                continue
 
             photo = input("URL фото (можно оставить пустым): ")
 
@@ -219,20 +239,21 @@ def employee_menu(repo, current_user):
             try:
                 animal_id = int(input("Введите ID животного для редактирования: "))
                 animal = repo.get_animal(animal_id)
-                if animal:
-                    print(f"Текущие данные: {animal.name}, возраст: {animal.age}, размер: {animal.size}")
+                if not animal:
+                    print("Ошибка: животное с таким ID не найдено!")
+                    continue
 
-                    new_name = input(f"Новая кличка [{animal.name}]: ") or animal.name
-                    new_age = input(f"Новый возраст [{animal.age}]: ") or animal.age
-                    new_size = input(f"Новый размер [{animal.size}]: ") or animal.size
-                    new_features = input(f"Новые особенности [{animal.features or 'нет'}]: ") or animal.features
+                print(f"Текущие данные: {animal.name}, возраст: {animal.age}, размер: {animal.size}")
 
-                    if repo.update_animal(animal_id, new_name, int(new_age), new_size, new_features):
-                        print("Данные животного обновлены!")
-                    else:
-                        print("Ошибка при обновлении.")
+                new_name = input(f"Новая кличка [{animal.name}]: ") or animal.name
+                new_age = input(f"Новый возраст [{animal.age}]: ") or animal.age
+                new_size = input(f"Новый размер [{animal.size}]: ") or animal.size
+                new_features = input(f"Новые особенности [{animal.features or 'нет'}]: ") or animal.features
+
+                if repo.update_animal(animal_id, new_name, int(new_age), new_size, new_features):
+                    print("Данные животного обновлены!")
                 else:
-                    print("Животное не найдено.")
+                    print("Ошибка при обновлении.")
             except ValueError:
                 print("Неверный ввод.")
 
@@ -244,11 +265,20 @@ def employee_menu(repo, current_user):
                       f"Статус: {animal.status_name}, Возраст: {animal.age}")
             try:
                 animal_id = int(input("Введите ID животного: "))
+                animal = repo.get_animal(animal_id)
+                if not animal:
+                    print("Ошибка: животное с таким ID не найдено!")
+                    continue
+
                 status_list = repo.get_all_statuses()
                 print("Доступные статусы:")
                 for status in status_list:
                     print(f"{status.status_id}: {status.name}")
                 new_status_id = int(input("Новый ID статуса: "))
+
+                if not any(status.status_id == new_status_id for status in status_list):
+                    print("Ошибка: такого статуса не существует!")
+                    continue
 
                 if repo.update_animal_status(animal_id, new_status_id):
                     print("Статус животного обновлен!")
@@ -266,11 +296,112 @@ def employee_menu(repo, current_user):
                 print(f"Карта ID: {record.medical_card_id}, Животное: {animal_name}, "
                       f"Название: {record.title}, Статус: {record.status}")
 
-        elif choice == "6" and current_user.login == "admin":
+        elif choice == "6":
+            medical_records = repo.get_all_medical_records()
+            print("\nМедицинские карты:")
+            for record in medical_records:
+                animal = repo.get_animal_by_medical_id(record.medical_card_id)
+                animal_name = animal.name if animal else "Неизвестно"
+                print(f"Карта ID: {record.medical_card_id}, Животное: {animal_name}, "
+                      f"Название: {record.title}, Статус: {record.status}")
+
+            try:
+                medical_card_id = int(input("\nВведите ID медицинской карты для редактирования: "))
+                record = repo.get_medical_record(medical_card_id)
+                if not record:
+                    print("Ошибка: медицинская карта с таким ID не найдена!")
+                    continue
+
+                animal = repo.get_animal_by_medical_id(medical_card_id)
+                animal_name = animal.name if animal else "Неизвестно"
+
+                print(f"\n=== Редактирование медицинской карты ===")
+                print(f"Животное: {animal_name}")
+                print(f"Текущие данные:")
+                print(f"1. Название процедуры: {record.title}")
+                print(f"2. Статус процедуры: {record.status}")
+                print(f"3. Описание: {record.description or 'нет'}")
+                print(f"4. Дата: {record.date}")
+
+                print("\nЧто вы хотите изменить?")
+                print("1 - Название процедуры")
+                print("2 - Статус процедуры")
+                print("3 - Описание")
+                print("4 - Всю карточку")
+                print("0 - Отмена")
+
+                edit_choice = input("Ваш выбор: ")
+
+                new_title = record.title
+                new_status = record.status
+                new_description = record.description
+
+                if edit_choice == "1":
+                    new_title = input(f"Введите новое название процедуры [{record.title}]: ").strip()
+                    if not new_title:
+                        new_title = record.title
+
+                elif edit_choice == "2":
+                    print("\nДоступные статусы процедуры:")
+                    print("- В процессе")
+                    print("- Завершено")
+                    print("- Отменено")
+                    print("- Запланировано")
+                    new_status = input(f"Введите новый статус [{record.status}]: ").strip()
+                    if not new_status:
+                        new_status = record.status
+
+                elif edit_choice == "3":
+                    new_description = input(f"Введите новое описание [{record.description or 'нет'}]: ").strip()
+                    if not new_description:
+                        new_description = record.description
+
+                elif edit_choice == "4":
+                    new_title = input(f"Введите новое название процедуры [{record.title}]: ").strip()
+                    if not new_title:
+                        new_title = record.title
+                    print("\nДоступные статусы процедуры:")
+                    print("- В процессе")
+                    print("- Завершено")
+                    print("- Отменено")
+                    print("- Запланировано")
+                    new_status = input(f"Введите новый статус [{record.status}]: ").strip()
+                    if not new_status:
+                        new_status = record.status
+                    new_description = input(f"Введите новое описание [{record.description or 'нет'}]: ").strip()
+                    if not new_description:
+                        new_description = record.description
+
+                elif edit_choice == "0":
+                    print("Редактирование отменено.")
+                    continue
+                else:
+                    print("Неверный выбор.")
+                    continue
+
+                # Подтверждение изменений
+                print(f"\nПодтвердите изменения:")
+                print(f"Название: {new_title}")
+                print(f"Статус: {new_status}")
+                print(f"Описание: {new_description or 'нет'}")
+                confirm = input("Сохранить изменения? (y/n): ")
+
+                if confirm.lower() == 'y':
+                    if repo.update_medical_record(medical_card_id, new_title, new_status, new_description):
+                        print("Медицинская карта обновлена!")
+                    else:
+                        print("Ошибка при обновлении.")
+                else:
+                    print("Изменения отменены.")
+
+            except ValueError:
+                print("Неверный ввод.")
+
+        elif choice == "7" and current_user.login == "admin":
             admin_user_management(repo)
 
         elif choice == "0":
-            print("Выход из системы...")
+            print("Важная ссылка - https://www.youtube.com/watch?v=_tA1nP1iits")
             break
         else:
             print("Неверный выбор. Попробуйте снова.")
@@ -294,8 +425,25 @@ def admin_user_management(repo):
 
         elif choice == "2":
             try:
+                users = repo.get_all_users()
+                print("\nСписок пользователей:")
+                for user in users:
+                    role = repo.get_role(user.role_id)
+                    print(f"ID: {user.user_id}, Логин: {user.login}, Email: {user.email}, Роль: {role.name}")
+
                 user_id = int(input("ID пользователя: "))
+
+                user_exists = any(user.user_id == user_id for user in users)
+                if not user_exists:
+                    print("Ошибка: пользователь с таким ID не найден!")
+                    continue
+
                 new_role_id = int(input("Новая роль (1-Гость, 2-Работник): "))
+
+                if new_role_id not in [1, 2]:
+                    print("Ошибка: такой роли не существует!")
+                    continue
+
                 if repo.update_user_role(user_id, new_role_id):
                     print("Роль пользователя обновлена!")
                 else:
@@ -305,10 +453,18 @@ def admin_user_management(repo):
 
         elif choice == "3":
             try:
+                users = repo.get_all_users()
+                print("\nСписок пользователей:")
+                for user in users:
+                    role = repo.get_role(user.role_id)
+                    print(f"ID: {user.user_id}, Логин: {user.login}, Email: {user.email}, Роль: {role.name}")
+
                 user_id = int(input("ID пользователя для удаления: "))
-                if user_id == 1:
-                    print("Нельзя удалить администратора!")
+                user_exists = any(user.user_id == user_id for user in users)
+                if not user_exists:
+                    print("Ошибка: пользователь с таким ID не найден!")
                     continue
+
                 if repo.delete_user(user_id):
                     print("Пользователь удален!")
                 else:

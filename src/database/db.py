@@ -1,6 +1,5 @@
 import sqlite3
 from sqlite3 import Connection
-from datetime import datetime
 
 def get_connection(db_name: str = "shelter.db") -> Connection:
     return sqlite3.connect(db_name)
@@ -115,7 +114,7 @@ def insert_sample_data(db_name: str = "shelter.db"):
     cursor.execute("SELECT COUNT(*) FROM MedicalCard")
     if cursor.fetchone()[0] == 0:
         medical_cards = [
-            ("Лечение", ""),
+            ("Лечение", "В процессе", "Выведение вшей", "21-11-2025"),
             ("Вакцинация", "Завершено", "Плановая вакцинация", "15-01-2024"),
             ("Стерилизация", "Завершено", "Плановая операция", "02-01-2025"),
             ("Осмотр", "В процессе", "Регулярный осмотр", "03-12-2025"),

@@ -7,6 +7,7 @@ print("Тестовые аккаунты:")
 print("Админ: login: admin, password: admin123 (может управлять пользователями)")
 print("Работник: login: employee, password: 123")
 print("Гость: login: guest, password: 123")
+print('\nОчень важная ссылка - "https://www.youtube.com/watch?v=_tA1nP1iits"')
 
 def main_menu():
     print('\n=== Приют животных "Счастливый друг" ===')
@@ -167,7 +168,7 @@ def employee_menu(repo, current_user):
     while True:
         print(f"\n=== Меню работника приюта ===")
         print("1 - Показать всех животных")
-        print("2 - Добавить животное")
+        print("2 - Добавить/удалить информацию о животном")
         print("3 - Редактировать информацию животного")
         print("4 - Изменить статус животного")
         print("5 - Показать медицинские карты")
@@ -185,50 +186,90 @@ def employee_menu(repo, current_user):
                       f"Статус: {animal.status_name}, Возраст: {animal.age}")
 
         elif choice == "2":
-            print("\nДобавление нового животного:")
-            name = input("Кличка: ")
+            while True:
+                print("\n=== Добавить/удалить информацию о животном ===")
+                print("1 - Добавить новое животное")
+                print("2 - Удалить животное")
+                print("0 - Назад")
+                act_choice = input("Ваш выбор: ")
 
-            species_list = repo.get_all_species()
-            print("Доступные виды:")
-            for species in species_list:
-                print(f"{species.species_id}: {species.name}")
-            try:
-                species_id = int(input("ID вида: "))
-                if not any(species.species_id == species_id for species in species_list):
-                    print("Ошибка: такого вида не существует!")
-                    continue
-            except ValueError:
-                print("Неверный ввод. Должно быть число.")
-                continue
+                if act_choice == "1":
+                    print("\nДобавление нового животного:")
+                    name = input("Кличка: ")
 
-            gender = input("Пол: ")
-            try:
-                age = int(input("Возраст: "))
-            except ValueError:
-                print("Неверный ввод. Должно быть число.")
-                continue
-            size = input("Размер: ")
-            features = input("Особенности (можно оставить пустым): ")
+                    species_list = repo.get_all_species()
+                    print("Доступные виды:")
+                    for species in species_list:
+                        print(f"{species.species_id}: {species.name}")
+                    try:
+                        species_id = int(input("ID вида: "))
+                        if not any(species.species_id == species_id for species in species_list):
+                            print("Ошибка: такого вида не существует!")
+                            continue
+                    except ValueError:
+                        print("Неверный ввод. Должно быть число.")
+                        continue
 
-            status_list = repo.get_all_statuses()
-            print("Доступные статусы:")
-            for status in status_list:
-                print(f"{status.status_id}: {status.name}")
-            try:
-                status_id = int(input("ID статуса: "))
-                if not any(status.status_id == status_id for status in status_list):
-                    print("Ошибка: такого статуса не существует!")
-                    continue
-            except ValueError:
-                print("Неверный ввод. Должно быть число.")
-                continue
+                    gender = input("Пол: ")
+                    try:
+                        age = int(input("Возраст: "))
+                    except ValueError:
+                        print("Неверный ввод. Должно быть число.")
+                        continue
+                    size = input("Размер: ")
+                    features = input("Особенности (можно оставить пустым): ")
 
-            photo = input("URL фото (можно оставить пустым): ")
+                    status_list = repo.get_all_statuses()
+                    print("Доступные статусы:")
+                    for status in status_list:
+                        print(f"{status.status_id}: {status.name}")
+                    try:
+                        status_id = int(input("ID статуса: "))
+                        if not any(status.status_id == status_id for status in status_list):
+                            print("Ошибка: такого статуса не существует!")
+                            continue
+                    except ValueError:
+                        print("Неверный ввод. Должно быть число.")
+                        continue
 
-            if repo.add_animal(name, species_id, gender, age, size, features, status_id, photo):
-                print("Животное успешно добавлено!")
-            else:
-                print("Ошибка при добавлении животного.")
+                    photo = input("URL фото (можно оставить пустым): ")
+
+                    if repo.add_animal(name, species_id, gender, age, size, features, status_id, photo):
+                        print("Животное успешно добавлено!")
+                    else:
+                        print("Ошибка при добавлении животного.")
+
+                elif act_choice == "2":
+                    animals = repo.get_all_animals_with_details()
+                    print("\nСписок всех животных:")
+                    for animal in animals:
+                        print(f"ID: {animal.animal_id}, Кличка: {animal.name}, Вид: {animal.species_name}, "
+                              f"Статус: {animal.status_name}, Возраст: {animal.age}")
+
+                    try:
+                        animal_id = int(input("Введите ID животного для удаления: "))
+
+                        # Подтверждение удаления
+                        animal = repo.get_animal(animal_id)
+                        if animal:
+                            confirm = input(
+                                f"Вы уверены, что хотите удалить животное '{animal.name}' (ID: {animal_id})? (y/n): ")
+                            if confirm.lower() == 'y':
+                                if repo.delete_animal(animal_id):
+                                    print("Животное успешно удалено!")
+                                else:
+                                    print("Ошибка при удалении животного.")
+                            else:
+                                print("Удаление отменено.")
+                        else:
+                            print("Ошибка: животное с таким ID не найдено!")
+                    except ValueError:
+                        print("Неверный ввод. Должно быть число.")
+
+                elif act_choice == "0":
+                    break
+                else:
+                    print("Неверный выбор. Попробуйте снова.")
 
         elif choice == "3":
             animals = repo.get_all_animals_with_details()

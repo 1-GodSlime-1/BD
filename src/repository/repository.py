@@ -93,6 +93,24 @@ class Repository:
                           photo=row["photo"], medical_card_id=row["medical_card_id"])
         return None
 
+    def delete_animal(self, animal_id):
+        try:
+            cursor = self.conn.cursor()
+
+            cursor.execute("SELECT medical_card_id FROM Animals WHERE animal_id = ?", (animal_id,))
+            result = cursor.fetchone()
+
+            cursor.execute("DELETE FROM Animals WHERE animal_id = ?", (animal_id,))
+
+            if result and result[0]:
+                cursor.execute("DELETE FROM MedicalCard WHERE medical_card_id = ?", (result[0],))
+
+            self.conn.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Ошибка при удалении животного: {e}")
+            return False
+
     def get_all_animals_with_details(self):
         query = """
             SELECT a.animal_id, a.name, s.name as species_name, a.gender, a.age, 

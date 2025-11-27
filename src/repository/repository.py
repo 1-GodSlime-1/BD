@@ -235,11 +235,11 @@ class Repository:
                                description=row["description"], date=row["date"])
         return None
 
-    def update_medical_record(self, medical_card_id, title, status, description):
+    def update_medical_record(self, medical_card_id, title, status, description, date):
         try:
-            self.cursor.execute("""UPDATE MedicalCard SET title = ?, status = ?, description = ? 
+            self.cursor.execute("""UPDATE MedicalCard SET title = ?, status = ?, description = ?, date = ?
                                 WHERE medical_card_id = ?""",
-                                (title, status, description, medical_card_id))
+                                (title, status, description, date, medical_card_id))
             self.conn.commit()
             return True
         except sqlite3.Error as e:
@@ -275,6 +275,14 @@ class Repository:
         except sqlite3.Error as e:
             print(f"Ошибка при добавлении медицинской записи: {e}")
             return False
+
+    def get_animals_without_medical_card(self):
+        self.cursor.execute("""SELECT animal_id, name FROM Animals 
+                            WHERE medical_card_id IS NULL""")
+        rows = self.cursor.fetchall()
+        return [Animal(animal_id=row["animal_id"], name=row["name"], species_id=None, gender=None,
+                      age=None, size=None, features=None, status_id=None, photo=None,
+                      medical_card_id=None) for row in rows]
 
     def close(self):
         self.conn.close()

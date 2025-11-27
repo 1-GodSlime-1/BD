@@ -126,7 +126,8 @@ def guest_menu(repo):
             if animals:
                 for animal in animals:
                     species = repo.get_species(animal.species_id)
-                    print(f"{animal.animal_id}: {animal.name} ({species.name}), {animal.age} лет, {animal.size}")
+                    print(
+                        f"{animal.animal_id}: {animal.name} ({species.name}), {animal.age} лет, Размер: {animal.size}")
                     if animal.features:
                         print(f"   Особенности: {animal.features}")
             else:
@@ -173,8 +174,9 @@ def employee_menu(repo, current_user):
         print("4 - Изменить статус животного")
         print("5 - Показать медицинские карты")
         print("6 - Редактировать медицинскую карту")
+        print("7 - Добавить медицинскую карту животному")
         if current_user.login == "admin":
-            print("7 - Управление пользователями")
+            print("8 - Управление пользователями")
         print("0 - Выход")
         choice = input("Ваш выбор: ")
 
@@ -335,7 +337,7 @@ def employee_menu(repo, current_user):
                 animal = repo.get_animal_by_medical_id(record.medical_card_id)
                 animal_name = animal.name if animal else "Неизвестно"
                 print(f"Карта ID: {record.medical_card_id}, Животное: {animal_name}, "
-                      f"Название: {record.title}, Статус: {record.status}")
+                      f"Название: {record.title}, Статус: {record.status}, Дата: {record.date}")
 
         elif choice == "6":
             medical_records = repo.get_all_medical_records()
@@ -344,7 +346,7 @@ def employee_menu(repo, current_user):
                 animal = repo.get_animal_by_medical_id(record.medical_card_id)
                 animal_name = animal.name if animal else "Неизвестно"
                 print(f"Карта ID: {record.medical_card_id}, Животное: {animal_name}, "
-                      f"Название: {record.title}, Статус: {record.status}")
+                      f"Название: {record.title}, Статус: {record.status}, Дата: {record.date}")
 
             try:
                 medical_card_id = int(input("\nВведите ID медицинской карты для редактирования: "))
@@ -412,6 +414,9 @@ def employee_menu(repo, current_user):
                     new_description = input(f"Введите новое описание [{record.description or 'нет'}]: ").strip()
                     if not new_description:
                         new_description = record.description
+                    new_date = input(f"Введите новую дату [{record.date}]").strip()
+                    if not new_date:
+                        new_date = record.date
 
                 elif edit_choice == "0":
                     print("Редактирование отменено.")
@@ -420,7 +425,6 @@ def employee_menu(repo, current_user):
                     print("Неверный выбор.")
                     continue
 
-                # Подтверждение изменений
                 print(f"\nПодтвердите изменения:")
                 print(f"Название: {new_title}")
                 print(f"Статус: {new_status}")
@@ -428,7 +432,7 @@ def employee_menu(repo, current_user):
                 confirm = input("Сохранить изменения? (y/n): ")
 
                 if confirm.lower() == 'y':
-                    if repo.update_medical_record(medical_card_id, new_title, new_status, new_description):
+                    if repo.update_medical_record(medical_card_id, new_title, new_status, new_description, new_date):
                         print("Медицинская карта обновлена!")
                     else:
                         print("Ошибка при обновлении.")
@@ -438,7 +442,10 @@ def employee_menu(repo, current_user):
             except ValueError:
                 print("Неверный ввод.")
 
-        elif choice == "7" and current_user.login == "admin":
+        elif choice == "7":
+            add_medical_record_menu(repo)
+
+        elif choice == "8" and current_user.login == "admin":
             admin_user_management(repo)
 
         elif choice == "0":
@@ -446,6 +453,70 @@ def employee_menu(repo, current_user):
             break
         else:
             print("Неверный выбор. Попробуйте снова.")
+
+def add_medical_record_menu(repo):
+    print("\n=== Добавление медицинской карты животному ===")
+
+    # Показать животных без медицинских карт
+    animals_without_medical = repo.get_animals_without_medical_card()
+    if not animals_without_medical:
+        print("Все животные уже имеют медицинские карты.")
+        return
+
+    print("\nЖивотные без медицинских карт:")
+    for animal in animals_without_medical:
+        print(f"ID: {animal.animal_id}, Кличка: {animal.name}")
+
+    try:
+        animal_id = int(input("\nВведите ID животного для добавления медицинской карты: "))
+
+        # Проверить, существует ли животное и нет ли у него уже медицинской карты
+        animal = repo.get_animal(animal_id)
+        if not animal:
+            print("Ошибка: животное с таким ID не найдено!")
+            return
+
+        if animal.medical_card_id is not None:
+            print("Ошибка: у этого животного уже есть медицинская карта!")
+            return
+
+        print(f"\nДобавление медицинской карты для животного: {animal.name}")
+
+        title = input("Название процедуры: ").strip()
+        if not title:
+            print("Название процедуры не может быть пустым!")
+            return
+
+        print("\nДоступные статусы процедуры:")
+        print("- В процессе")
+        print("- Завершено")
+        print("- Отменено")
+        print("- Запланировано")
+        status = input("Статус процедуры: ").strip()
+        if not status:
+            print("Статус процедуры не может быть пустым!")
+            return
+
+        description = input("Описание процедуры (можно оставить пустым): ").strip()
+
+        # Подтверждение
+        print(f"\nПодтвердите добавление медицинской карты:")
+        print(f"Животное: {animal.name}")
+        print(f"Название процедуры: {title}")
+        print(f"Статус: {status}")
+        print(f"Описание: {description or 'нет'}")
+
+        confirm = input("Добавить медицинскую карту? (y/n): ")
+        if confirm.lower() == 'y':
+            if repo.add_medical_record(animal_id, title, status, description):
+                print("Медицинская карта успешно добавлена!")
+            else:
+                print("Ошибка при добавлении медицинской карты.")
+        else:
+            print("Добавление отменено.")
+
+    except ValueError:
+        print("Неверный ввод. Должно быть число.")
 
 
 def admin_user_management(repo):

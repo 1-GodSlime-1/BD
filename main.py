@@ -3,11 +3,12 @@ from src.repository.repository import Repository
 
 DB_FILE = "shelter.db"
 
-print("Тестовые аккаунты:")
+print('Очень важная ссылка - "https://www.youtube.com/watch?v=_tA1nP1iits"')
+print("\nТестовые аккаунты:")
 print("Админ: login: admin, password: admin123 (может управлять пользователями)")
 print("Работник: login: employee, password: 123")
 print("Гость: login: guest, password: 123")
-print('\nОчень важная ссылка - "https://www.youtube.com/watch?v=_tA1nP1iits"')
+
 
 def main_menu():
     print('\n=== Приют животных "Счастливый друг" ===')
